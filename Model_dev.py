@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
@@ -29,7 +30,7 @@ from sklearn.linear_model import TweedieRegressor
 from sklearn.linear_model import RANSACRegressor
 from sklearn.linear_model import OrthogonalMatchingPursuitCV
 from sklearn.linear_model import PassiveAggressiveRegressor
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score,mean_squared_error,mean_absolute_error
 
 
 class RegressionModels():
@@ -39,7 +40,10 @@ class RegressionModels():
         self.ytrain = y_training
         self.Xtest = X_test
         self.ytest = y_test
-        self.results = []
+        self.results_r2 = []
+        self.results_MSE = []
+        self.results_MAE = []
+        self.results_SMSE = []
 
     def fit_models(self):
         self.M1 = LinearRegression()
@@ -96,11 +100,16 @@ class RegressionModels():
         for i in self.clfs:
             i.fit(self.Xtrain, self.ytrain)
             self.r2 = r2_score(self.ytest, i.predict(self.Xtest))
-            self.results.append(self.r2)
+            self.MSE = mean_squared_error(self.ytest, i.predict(self.Xtest))
+            self.MAE = mean_absolute_error(self.ytest, i.predict(self.Xtest))
+            self.SMSE = np.sqrt(mean_absolute_error(self.ytest, i.predict(self.Xtest)))
+            self.results_r2.append(self.r2)
+            self.results_MSE.append(self.MSE)
+            self.results_MAE.append(self.MAE)
+            self.results_SMSE.append(self.SMSE)
 
-        self.score = pd.DataFrame(self.results, index=self.Name)
-        self.score.columns = ['R2']
-        self.score.sort_values(by='R2', ascending=False)
+        self.dict = {'R2': self.results_r2, 'MSE': self.results_MSE, 'MAE': self.results_MAE, 'SMSE': self.results_SMSE}
+        self.score = pd.DataFrame(self.dict, index=self.Name)
 
         return self.score
 
